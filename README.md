@@ -1,7 +1,5 @@
 # Kazyshop API
 
----
-
 ```js
 npm install
 npm run dev
