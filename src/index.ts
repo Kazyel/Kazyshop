@@ -3,12 +3,11 @@ import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { protectRoute } from "./middlewares/auth";
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 import userRoutes from "./routes/users";
 import clothesRoutes from "./routes/clothes";
 
-dotenv.config();
-
+dotenv.config({ path: "./.env" });
 type Variables = {
     user: { name: string; password: string };
 };

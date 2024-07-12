@@ -1,5 +1,5 @@
-import * as argon2 from "argon2";
-import * as jwt from "jsonwebtoken";
+import argon2 from "argon2";
+import jwt from "jsonwebtoken";
 import { createMiddleware } from "hono/factory";
 
 /**
@@ -44,6 +44,8 @@ export const protectRoute = createMiddleware(async (c, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
         c.set("user", decoded);
+        const teste = c.get("user");
+        console.log(teste);
 
         await next();
     } catch (error) {
