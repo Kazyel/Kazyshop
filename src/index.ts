@@ -5,9 +5,15 @@ import { cors } from "hono/cors";
 import { protectRoute } from "./middlewares/auth";
 import * as dotenv from "dotenv";
 import userRoutes from "./routes/users";
+import clothesRoutes from "./routes/clothes";
 
 dotenv.config();
-const app = new Hono();
+
+type Variables = {
+    user: { name: string; password: string };
+};
+
+const app = new Hono<{ Variables: Variables }>();
 const port = 3000;
 
 // Middlewares
@@ -21,6 +27,7 @@ app.get("/", (c) => {
 });
 
 app.route("/api/users", userRoutes);
+app.route("/api/clothes", clothesRoutes);
 
 console.log(`Server is running on port ${port}`);
 serve({

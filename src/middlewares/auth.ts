@@ -1,8 +1,10 @@
 import * as argon2 from "argon2";
 import * as jwt from "jsonwebtoken";
-import { Next } from "hono";
-import { env } from "hono/adapter";
+import { createMiddleware } from "hono/factory";
 
+/**
+ * Hashes the password using argon2.
+ */
 export const hashPassword = async (password: string) => {
     const hash = await argon2.hash(password);
     return hash;
@@ -16,17 +18,21 @@ export const verifyPassword = async (password: string, hash: string) => {
     }
 };
 
-export const createToken = (c: any, userId: string) => {
-    const token = jwt.sign({ userId }, process.env.JWT_SECRET as string, {
+/**
+ * Creates a JWT token.
+ */
+export const createToken = (user: { name: string; password: string }) => {
+    const token = jwt.sign(user, process.env.JWT_SECRET as string, {
         expiresIn: "1h",
     });
 
     return token;
 };
 
-export const protectRoute = (c: any, next: Next) => {
-    const { JWT_SECRET } = env<{ JWT_SECRET: string }>(c);
-
+/**
+ * Protects the route with a JWT token.
+ */
+export const protectRoute = createMiddleware(async (c, next) => {
     const bearerToken = c.req.header("Authorization");
 
     if (!bearerToken) {
@@ -35,17 +41,12 @@ export const protectRoute = (c: any, next: Next) => {
 
     const token = bearerToken.split(" ")[1];
 
-    if (token !== "Bearer ") {
-        return c.json({ message: "Please provide a valid bearer token." }, 401);
-    }
-
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        c.user = decoded;
-        next();
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+        c.set("user", decoded);
+
+        await next();
     } catch (error) {
         return c.json({ message: "Invalid token" }, 401);
     }
-
-    next();
-};
+});

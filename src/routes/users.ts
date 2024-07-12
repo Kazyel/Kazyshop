@@ -3,7 +3,7 @@ import { createUser } from "../handlers/users";
 
 const userRoutes = new Hono();
 
-userRoutes.get("/", async (c: any, next: Next) => {
+userRoutes.get("/", async (c) => {
     return c.text("Hello users!", 200);
 });
 

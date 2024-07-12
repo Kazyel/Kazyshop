@@ -1,21 +1,21 @@
-import { Next } from "hono";
-import { db } from "../db/db";
+import { createToken, hashPassword } from "../middlewares/auth";
+import { Context } from "hono";
 import { user } from "../db/schema";
-import { createToken } from "../middlewares/auth";
+import { db } from "../db/db";
 
-export const createUser = async (c: any, next: Next) => {
-    const body = await c.req.json();
-    const { name, email, password } = body;
+export const createUser = async (c: Context) => {
+    const { name, email, password } = await c.req.json();
+    const hashedPassword = await hashPassword(password);
 
-    const newUser = await db.insert(user).values({
+    await db.insert(user).values({
         name,
         email,
-        password,
+        password: hashedPassword,
         createdAt: new Date(),
         updatedAt: new Date(),
     });
 
-    const token = createToken(c, "teste");
+    const token = createToken({ name, password: hashedPassword });
 
     return c.json({ token });
 };
