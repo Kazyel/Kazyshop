@@ -21,7 +21,11 @@ export const verifyPassword = async (password: string, hash: string) => {
 /**
  * Creates a JWT token.
  */
-export const createToken = (user: { email: string; password: string }) => {
+export const createToken = (user: {
+    id: string;
+    email: string;
+    password: string;
+}) => {
     const token = jwt.sign(user, process.env.JWT_SECRET as string, {
         expiresIn: "1h",
     });

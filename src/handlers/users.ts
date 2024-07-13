@@ -2,7 +2,7 @@ import { createToken, hashPassword, verifyPassword } from "../middlewares/auth";
 import { Context } from "hono";
 import { user } from "../db/schema";
 import { db } from "../db/db";
-import { eq, like } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const createUser = async (c: Context) => {
     const { name, email, password } = await c.req.json();
@@ -17,14 +17,22 @@ export const createUser = async (c: Context) => {
             return c.json({ message: "Email already exists." }, 400);
         }
 
-        await db.insert(user).values({
-            name,
+        const userCreated = await db
+            .insert(user)
+            .values({
+                name,
+                email,
+                password: hashedPassword,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            })
+            .returning();
+
+        const token = createToken({
+            id: userCreated[0].id!,
             email,
             password: hashedPassword,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         });
-        const token = createToken({ email, password: hashedPassword });
 
         return c.json({ message: "User created successfully.", token }, 200);
     } catch (error: any) {
@@ -37,7 +45,15 @@ export const getUsers = async (c: Context) => {
 
     try {
         if (limit <= 50) {
-            const users = await db.select().from(user).limit(limit);
+            const users = await db
+                .select({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                })
+                .from(user)
+                .limit(limit);
             return c.json({ users });
         }
 
@@ -46,38 +62,6 @@ export const getUsers = async (c: Context) => {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
 };
-
-export const searchUsers = async (c: Context) => {
-    const { name } = await c.req.json();
-
-    if (!name) {
-        return c.json(
-            { message: "Please, provide a name to search for." },
-            400
-        );
-    }
-
-    try {
-        const foundUsers = await db
-            .select({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-            })
-            .from(user)
-            .where(like(user.name, `%${name}%`));
-
-        return c.json({ users: foundUsers });
-    } catch (error: any) {
-        return c.json({ message: `Error: ${error.message}` }, 400);
-    }
-};
-
-/**
- * TODO: Implement the delete specific user route.
- * TODO: Implement the update specific user route.
- * TODO: Implement the get specific user route.
- */
 
 export const loginUser = async (c: Context) => {
     const { email, password } = await c.req.json();
@@ -100,9 +84,34 @@ export const loginUser = async (c: Context) => {
             return c.json({ message: "Incorrect password." }, 400);
         }
 
-        const token = createToken({ email: currentUser.email!, password });
+        const token = createToken({
+            id: currentUser.id!,
+            email: currentUser.email!,
+            password,
+        });
 
         return c.json({ message: "Login successful.", token }, 200);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+};
+
+export const getUserByID = async (c: Context) => {
+    const id = c.req.param("id");
+
+    try {
+        const foundUser = await db.query.user.findFirst({
+            columns: {
+                password: false,
+            },
+            where: eq(user.id, id),
+        });
+
+        if (!foundUser) {
+            return c.json({ message: "User not found." }, 400);
+        }
+
+        return c.json({ user: foundUser });
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }

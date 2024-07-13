@@ -19,12 +19,12 @@ const app = new Hono<{ Variables: Variables }>({ strict: false });
 /**
  * Middlewares
  */
+app.use(logger());
 app.use(
     csrf({
         origin: "http://localhost:8080",
     })
 );
-app.use(logger());
 app.use("/api/*", cors());
 app.use("/api/clothes/*", protectRoute);
 
