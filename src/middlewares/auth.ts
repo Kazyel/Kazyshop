@@ -44,8 +44,6 @@ export const protectRoute = createMiddleware(async (c, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
         c.set("user", decoded);
-        const teste = c.get("user");
-        console.log(teste);
 
         await next();
     } catch (error) {

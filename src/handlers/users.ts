@@ -2,7 +2,7 @@ import { createToken, hashPassword } from "../middlewares/auth";
 import { Context } from "hono";
 import { user } from "../db/schema";
 import { db } from "../db/db";
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 
 export const createUser = async (c: Context) => {
     const { name, email, password } = await c.req.json();
@@ -21,7 +21,6 @@ export const createUser = async (c: Context) => {
     }
 
     const token = createToken({ name, password: hashedPassword });
-
     return c.json({ token });
 };
 
@@ -58,10 +57,16 @@ export const searchUsers = async (c: Context) => {
                 email: user.email,
             })
             .from(user)
-            .where(eq(user.name, name));
+            .where(like(user.name, `%${name}%`));
 
         return c.json({ users: foundUsers });
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
 };
+
+/**
+ * TODO: Implement the delete specific user route.
+ * TODO: Implement the update specific user route.
+ * TODO: Implement the get specific user route.
+ */
