@@ -9,9 +9,9 @@
 
 ## Running Locally
 
-´´´js
-npm install
-npm run dev
-´´´
+```js
+ npm install
+ npm run dev
+```
 
 And open [http://localhost:3000/](http://localhost:3000/) in your browser.
