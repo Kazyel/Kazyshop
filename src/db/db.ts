@@ -8,11 +8,11 @@ dotenv.config({ path: "./.env" });
 const { Client } = pg;
 
 const client = new Client({
-    user: process.env.PGUSER as string,
-    password: process.env.PGPASSWORD as string,
-    host: process.env.PGHOST as string,
-    port: process.env.PGPORT as unknown as number,
-    database: process.env.PGDATABASE as string,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    host: process.env.PGHOST,
+    port: Number(process.env.PGPORT),
+    database: process.env.PGDATABASE,
 });
 
 await client.connect();
