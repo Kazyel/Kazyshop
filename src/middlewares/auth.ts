@@ -12,7 +12,7 @@ export const hashPassword = async (password: string) => {
 
 export const verifyPassword = async (password: string, hash: string) => {
     try {
-        return argon2.verify(password, hash);
+        return argon2.verify(hash, password);
     } catch (error) {
         console.log(error);
     }
@@ -21,7 +21,7 @@ export const verifyPassword = async (password: string, hash: string) => {
 /**
  * Creates a JWT token.
  */
-export const createToken = (user: { name: string; password: string }) => {
+export const createToken = (user: { email: string; password: string }) => {
     const token = jwt.sign(user, process.env.JWT_SECRET as string, {
         expiresIn: "1h",
     });

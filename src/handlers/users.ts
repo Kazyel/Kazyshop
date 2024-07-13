@@ -1,4 +1,4 @@
-import { createToken, hashPassword } from "../middlewares/auth";
+import { createToken, hashPassword, verifyPassword } from "../middlewares/auth";
 import { Context } from "hono";
 import { user } from "../db/schema";
 import { db } from "../db/db";
@@ -9,6 +9,14 @@ export const createUser = async (c: Context) => {
     const hashedPassword = await hashPassword(password);
 
     try {
+        const emailExist = await db.query.user.findFirst({
+            where: eq(user.email, email),
+        });
+
+        if (emailExist) {
+            return c.json({ message: "Email already exists." }, 400);
+        }
+
         await db.insert(user).values({
             name,
             email,
@@ -16,12 +24,12 @@ export const createUser = async (c: Context) => {
             createdAt: new Date(),
             updatedAt: new Date(),
         });
+        const token = createToken({ email, password: hashedPassword });
+
+        return c.json({ message: "User created successfully.", token }, 200);
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
-
-    const token = createToken({ name, password: hashedPassword });
-    return c.json({ token });
 };
 
 export const getUsers = async (c: Context) => {
@@ -70,3 +78,34 @@ export const searchUsers = async (c: Context) => {
  * TODO: Implement the update specific user route.
  * TODO: Implement the get specific user route.
  */
+
+export const loginUser = async (c: Context) => {
+    const { email, password } = await c.req.json();
+
+    try {
+        const currentUser = await db.query.user.findFirst({
+            where: eq(user.email, email),
+        });
+
+        if (!currentUser) {
+            return c.json({ message: "User not found." }, 400);
+        }
+
+        const isPasswordValid = await verifyPassword(
+            password,
+            currentUser.password!
+        );
+
+        console.log(isPasswordValid);
+
+        if (!isPasswordValid) {
+            return c.json({ message: "Incorrect password." }, 400);
+        }
+
+        const token = createToken({ email: currentUser.email!, password });
+
+        return c.json({ message: "Login successful.", token }, 200);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+};

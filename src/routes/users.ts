@@ -1,7 +1,12 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
-import { createUser, getUsers, searchUsers } from "../handlers/users";
-import { validLimit } from "../utils/validators";
+import {
+    createUser,
+    getUsers,
+    loginUser,
+    searchUsers,
+} from "../handlers/users";
+import { validLimit } from "../middlewares/validators";
 
 const userRoutes = new Hono();
 
@@ -11,6 +16,7 @@ userRoutes.get(
     getUsers
 );
 
+userRoutes.post("/login", loginUser);
 userRoutes.post("/search-users", searchUsers);
 userRoutes.post("/create-user", createUser);
 
