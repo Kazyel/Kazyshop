@@ -14,4 +14,4 @@
  npm run dev
 ```
 
-And open [http://localhost:3000/](http://localhost:3000/) in your browser.
+And make sure to run a Postgres database locally or on a Docker container and set everything in the .env!
