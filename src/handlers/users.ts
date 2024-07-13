@@ -96,8 +96,6 @@ export const loginUser = async (c: Context) => {
             currentUser.password!
         );
 
-        console.log(isPasswordValid);
-
         if (!isPasswordValid) {
             return c.json({ message: "Incorrect password." }, 400);
         }

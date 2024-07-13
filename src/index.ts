@@ -6,6 +6,7 @@ import { protectRoute } from "./middlewares/auth";
 import dotenv from "dotenv";
 import userRoutes from "./routes/users";
 import clothesRoutes from "./routes/clothes";
+import { csrf } from "hono/csrf";
 
 dotenv.config({ path: "./.env" });
 type Variables = {
@@ -16,6 +17,11 @@ const app = new Hono<{ Variables: Variables }>({ strict: false });
 const port = 3000;
 
 // Middlewares
+app.use(
+    csrf({
+        origin: "http://localhost:8080",
+    })
+);
 app.use(logger());
 app.use("/api/*", cors());
 app.use("/api/clothes/*", protectRoute);
