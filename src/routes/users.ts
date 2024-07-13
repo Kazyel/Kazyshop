@@ -1,13 +1,9 @@
-import { Hono, Next } from "hono";
-import { createUser } from "../handlers/users";
+import { Hono } from "hono";
+import { createUser, getUser } from "../handlers/users";
 
 const userRoutes = new Hono();
 
-userRoutes.get("/", async (c) => {
-    console.log(process.env.DB_URL);
-    return c.text("Hello users!", 200);
-});
-
-userRoutes.post("/", createUser);
+userRoutes.post("/get-user", getUser);
+userRoutes.post("/create-user", createUser);
 
 export default userRoutes;
