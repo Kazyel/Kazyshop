@@ -12,7 +12,7 @@ type Variables = {
     user: { name: string; password: string };
 };
 
-const app = new Hono<{ Variables: Variables }>();
+const app = new Hono<{ Variables: Variables }>({ strict: false });
 const port = 3000;
 
 // Middlewares

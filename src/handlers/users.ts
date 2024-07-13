@@ -25,7 +25,22 @@ export const createUser = async (c: Context) => {
     return c.json({ token });
 };
 
-export const getUser = async (c: Context) => {
+export const getUsers = async (c: Context) => {
+    const limit = c.req.valid("param" as never);
+
+    try {
+        if (limit <= 50) {
+            const users = await db.select().from(user).limit(limit);
+            return c.json({ users });
+        }
+
+        return c.json({ message: "Limit must be less than 50." }, 400);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+};
+
+export const searchUsers = async (c: Context) => {
     const { name } = await c.req.json();
 
     if (!name) {
