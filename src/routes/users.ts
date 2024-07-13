@@ -90,7 +90,7 @@ userRoutes.post("/login", async (c) => {
 
 /**
  * Get all users.
- * @limit - Number of users to return. Default is 50. Max is 50.
+ * @limit - Number of users to return. Default is 25. Max is 25.
  */
 userRoutes.get(
     "/get-users/:limit",
@@ -110,7 +110,7 @@ userRoutes.get(
         const limit = c.req.valid("param");
 
         try {
-            if (limit <= 50) {
+            if (limit <= 25) {
                 const users = await db
                     .select({
                         id: user.id,

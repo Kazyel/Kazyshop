@@ -9,6 +9,7 @@ import { Variables } from "./utils/types";
 import { protectRoute } from "./middlewares/auth";
 import userRoutes from "./routes/users";
 import clothesRoutes from "./routes/clothes";
+import { serveStatic } from "@hono/node-server/serve-static";
 
 /**
  *  Basic configuration
@@ -27,11 +28,11 @@ app.use(
 );
 app.use("/api/*", cors());
 app.use("/api/*", protectRoute);
+app.use("/static/*", serveStatic({ root: "./src/" }));
 
 /**
  * Routes
  */
-
 app.route("/api/users", userRoutes);
 app.route("/api/clothes", clothesRoutes);
 
