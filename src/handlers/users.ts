@@ -116,3 +116,19 @@ export const getUserByID = async (c: Context) => {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
 };
+
+export const deleteUser = async (c: Context) => {
+    const id = c.req.param("id");
+
+    try {
+        const deletedUser = await db.delete(user).where(eq(user.id, id));
+
+        if (!deletedUser) {
+            return c.json({ message: "User not found." }, 400);
+        }
+
+        return c.json({ message: "User deleted successfully." }, 200);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+};

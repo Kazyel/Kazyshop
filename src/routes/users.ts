@@ -3,6 +3,7 @@ import { validator } from "hono/validator";
 import { validLimit } from "../middlewares/validators";
 import {
     createUser,
+    deleteUser,
     getUserByID,
     getUsers,
     loginUser,
@@ -16,16 +17,13 @@ userRoutes.get(
     getUsers
 );
 userRoutes.get("/get-user/:id", getUserByID);
-
 userRoutes.post("/create-user", createUser);
 userRoutes.post("/login", loginUser);
+userRoutes.delete("/delete-user/:id", deleteUser);
 
 /**
- * TODO: Implement the delete specific user route.
  * TODO: Implement the update specific user route.
- * TODO: Implement the get specific user route.
  */
-userRoutes.get("/delete-user/:id");
-userRoutes.get("/update-user/:id");
+userRoutes.patch("/update-user/:id");
 
 export default userRoutes;
