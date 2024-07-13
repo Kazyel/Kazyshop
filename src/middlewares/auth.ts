@@ -5,16 +5,20 @@ import { createMiddleware } from "hono/factory";
 /**
  * Hashes the password using argon2.
  */
-export const hashPassword = async (password: string) => {
+export const hashPassword = async (password: string): Promise<string> => {
     const hash = await argon2.hash(password);
     return hash;
 };
 
-export const verifyPassword = async (password: string, hash: string) => {
+export const verifyPassword = async (
+    password: string,
+    hash: string
+): Promise<boolean> => {
     try {
         return argon2.verify(hash, password);
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        console.log(`Error: ${error.message}`);
+        return false;
     }
 };
 
@@ -25,7 +29,7 @@ export const createToken = (user: {
     id: string;
     email: string;
     password: string;
-}) => {
+}): string => {
     const token = jwt.sign(user, process.env.JWT_SECRET as string, {
         expiresIn: "1h",
     });

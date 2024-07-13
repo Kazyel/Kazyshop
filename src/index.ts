@@ -26,11 +26,12 @@ app.use(
     })
 );
 app.use("/api/*", cors());
-app.use("/api/clothes/*", protectRoute);
+app.use("/api/*", protectRoute);
 
 /**
  * Routes
  */
+
 app.route("/api/users", userRoutes);
 app.route("/api/clothes", clothesRoutes);
 
