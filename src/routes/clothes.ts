@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { clothes } from "../db/schema";
 import { db } from "../db/db";
-import { inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const clothesRoutes = new Hono();
 
 /**
- * Get all clothes or filtered clothes by tags.
+ * Get all clothes or filtered clothes by tags passed in the query string.
  */
 clothesRoutes.get("/get-clothes", async (c) => {
     try {
@@ -34,7 +34,7 @@ clothesRoutes.get("/get-clothes", async (c) => {
 
 /**
  * Add a new cloth to the database.
- * TODO: Add validation.
+ * Requires name, description, price, tags and imageUrl.
  */
 clothesRoutes.post("/add-clothes", async (c) => {
     try {
@@ -58,6 +58,65 @@ clothesRoutes.post("/add-clothes", async (c) => {
             .returning();
 
         return c.json({ message: "Cloth created successfully.", clothCreated });
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+});
+
+/**
+ * Delete a cloth by id.
+ */
+clothesRoutes.delete("/delete-clothes/:id", async (c) => {
+    const id = c.req.param("id");
+
+    try {
+        const deletedCloth = await db.delete(clothes).where(eq(clothes.id, id));
+
+        if (!deletedCloth) {
+            return c.json({ message: "Cloth not found." }, 400);
+        }
+
+        return c.json({ message: "Cloth deleted successfully." }, 200);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+});
+
+/**
+ * Update a cloth by id.
+ */
+clothesRoutes.patch("/update-clothes/:id", async (c) => {
+    const id = c.req.param("id");
+
+    try {
+        const { name, description, price, tags, imageUrl } = await c.req.json();
+
+        if (!name || !description || !price || !tags || !imageUrl) {
+            return c.json({ message: "Missing field(s)." }, 400);
+        }
+
+        const clothExists = await db.query.clothes.findFirst({
+            where: eq(clothes.id, id),
+        });
+
+        if (!clothExists) {
+            return c.json({ message: "Cloth not found." }, 400);
+        }
+
+        await db
+            .update(clothes)
+            .set({
+                data: {
+                    name,
+                    description,
+                    price,
+                    tags,
+                    imageUrl,
+                },
+            })
+            .where(eq(clothes.id, id));
+
+        return c.json({ message: "Cloth updated successfully." }, 200);
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
