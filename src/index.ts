@@ -27,7 +27,7 @@ app.use(
     })
 );
 app.use("/api/*", cors());
-app.use("/api/*", protectRoute);
+// app.use("/api/*", protectRoute);
 app.use("/static/*", serveStatic({ root: "./src/" }));
 
 /**

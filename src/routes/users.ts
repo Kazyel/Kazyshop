@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
+import { Variables } from "../utils/types";
 import { createToken, hashPassword, verifyPassword } from "../middlewares/auth";
 import { db } from "../db/db";
 import { user } from "../db/schema";
 import { eq } from "drizzle-orm";
-import { Variables } from "hono/types";
-import { UserContext } from "../utils/types";
 
 const userRoutes = new Hono<{ Variables: Variables }>();
 
@@ -14,7 +13,6 @@ const userRoutes = new Hono<{ Variables: Variables }>();
  * Requires name, email and password.
  * Password is hashed using argon2.
  */
-
 userRoutes.post("/create-user", async (c) => {
     try {
         const { name, email, password } = await c.req.json();
@@ -42,7 +40,6 @@ userRoutes.post("/create-user", async (c) => {
         const token = createToken({
             id: userCreated[0].id!,
             email,
-            password: hashedPassword,
         });
 
         return c.json({ message: "User created successfully.", token }, 200);
@@ -79,7 +76,6 @@ userRoutes.post("/login", async (c) => {
         const token = createToken({
             id: currentUser.id!,
             email: currentUser.email!,
-            password,
         });
 
         return c.json({ message: "Login successful.", token }, 200);
@@ -159,7 +155,7 @@ userRoutes.get("/get-user/:id", async (c) => {
  * Requires the user to be logged in.
  */
 userRoutes.delete("/delete-user", async (c) => {
-    const { id } = c.get("user") as UserContext;
+    const { id } = c.get("user");
 
     try {
         const deletedUser = await db.delete(user).where(eq(user.id, id));
@@ -181,7 +177,7 @@ userRoutes.delete("/delete-user", async (c) => {
 userRoutes.patch("/update-user/", async (c) => {
     try {
         const { name, email, password } = await c.req.json();
-        const { id } = c.get("user") as UserContext;
+        const { id } = c.get("user");
 
         if (!name && !email && !password) {
             return c.json({ message: "Missing all fields." }, 400);

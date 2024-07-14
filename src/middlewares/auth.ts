@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { createMiddleware } from "hono/factory";
 
 /**
- * Hashes the password using argon2.
+ * Password hashing and verification using argon2.
  */
 export const hashPassword = async (password: string): Promise<string> => {
     const hash = await argon2.hash(password);
@@ -25,11 +25,7 @@ export const verifyPassword = async (
 /**
  * Creates a JWT token.
  */
-export const createToken = (user: {
-    id: string;
-    email: string;
-    password: string;
-}): string => {
+export const createToken = (user: { id: string; email: string }): string => {
     const token = jwt.sign(user, process.env.JWT_SECRET as string, {
         expiresIn: "1h",
     });
@@ -54,7 +50,7 @@ export const protectRoute = createMiddleware(async (c, next) => {
         c.set("user", decoded);
 
         await next();
-    } catch (error) {
-        return c.json({ message: "Invalid token" }, 401);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 401);
     }
 });
