@@ -10,6 +10,7 @@ import { protectRoute } from "./middlewares/auth";
 import userRoutes from "./routes/users";
 import clothesRoutes from "./routes/clothes";
 import { serveStatic } from "@hono/node-server/serve-static";
+import authRoutes from "./routes/auth";
 
 /**
  *  Basic configuration
@@ -26,13 +27,13 @@ app.use(
         origin: "http://localhost:8080",
     })
 );
-app.use("/api/*", cors());
-// app.use("/api/*", protectRoute);
+app.use("/*", cors());
 app.use("/static/*", serveStatic({ root: "./src/" }));
 
 /**
  * Routes
  */
+app.route("/auth", authRoutes);
 app.route("/api/users", userRoutes);
 app.route("/api/clothes", clothesRoutes);
 

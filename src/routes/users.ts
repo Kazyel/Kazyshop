@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { Variables } from "../utils/types";
-import { createToken, hashPassword, verifyPassword } from "../middlewares/auth";
+import { hashPassword, protectRoute } from "../middlewares/auth";
 import { db } from "../db/db";
 import { user } from "../db/schema";
 import { eq } from "drizzle-orm";
@@ -9,87 +9,11 @@ import { eq } from "drizzle-orm";
 const userRoutes = new Hono<{ Variables: Variables }>();
 
 /**
- * Create a new user and return a JWT Token.
- * Requires name, email and password.
- * Password is hashed using argon2.
- */
-userRoutes.post("/create-user", async (c) => {
-    try {
-        const { name, email, password } = await c.req.json();
-
-        const emailExist = await db.query.user.findFirst({
-            where: eq(user.email, email),
-        });
-
-        if (emailExist) {
-            return c.json({ message: "Email already exists." }, 400);
-        }
-
-        const hashedPassword = await hashPassword(password);
-        const userCreated = await db
-            .insert(user)
-            .values({
-                name,
-                email,
-                password: hashedPassword,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            })
-            .returning({ id: user.id });
-
-        const token = createToken({
-            id: userCreated[0].id!,
-            email,
-        });
-
-        return c.json({ message: "User created successfully.", token }, 200);
-    } catch (error: any) {
-        return c.json({ message: `Error: ${error.message}` }, 400);
-    }
-});
-
-/**
- * Login a user and return a JWT Token.
- * Requires email and password.
- */
-userRoutes.post("/login", async (c) => {
-    try {
-        const { email, password } = await c.req.json();
-
-        const currentUser = await db.query.user.findFirst({
-            where: eq(user.email, email),
-        });
-
-        if (!currentUser) {
-            return c.json({ message: "User not found." }, 400);
-        }
-
-        const isPasswordValid = await verifyPassword(
-            password,
-            currentUser.password!
-        );
-
-        if (!isPasswordValid) {
-            return c.json({ message: "Incorrect password." }, 400);
-        }
-
-        const token = createToken({
-            id: currentUser.id!,
-            email: currentUser.email!,
-        });
-
-        return c.json({ message: "Login successful.", token }, 200);
-    } catch (error: any) {
-        return c.json({ message: `Error: ${error.message}` }, 400);
-    }
-});
-
-/**
  * Get all users.
  * @limit - Number of users to return. Default is 25. Max is 25.
  */
 userRoutes.get(
-    "/get-users/:limit",
+    "/all/:limit",
     validator("param", (value, c) => {
         const limit = value["limit"];
 
@@ -129,7 +53,7 @@ userRoutes.get(
 /**
  * Get a user by id.
  */
-userRoutes.get("/get-user/:id", async (c) => {
+userRoutes.get("/:id", async (c) => {
     const id = c.req.param("id");
 
     try {
@@ -154,7 +78,7 @@ userRoutes.get("/get-user/:id", async (c) => {
  * Delete the logged user.
  * Requires the user to be logged in.
  */
-userRoutes.delete("/delete-user", async (c) => {
+userRoutes.delete("/", protectRoute, async (c) => {
     const { id } = c.get("user");
 
     try {
@@ -174,7 +98,7 @@ userRoutes.delete("/delete-user", async (c) => {
  * Update the logged user's information.
  * Requires the user to be logged in.
  */
-userRoutes.patch("/update-user/", async (c) => {
+userRoutes.patch("/", protectRoute, async (c) => {
     try {
         const { name, email, password } = await c.req.json();
         const { id } = c.get("user");

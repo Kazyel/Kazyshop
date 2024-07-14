@@ -2,13 +2,14 @@ import { Hono } from "hono";
 import { clothes } from "../db/schema";
 import { db } from "../db/db";
 import { eq } from "drizzle-orm";
+import { protectRoute } from "../middlewares/auth";
 
 const clothesRoutes = new Hono();
 
 /**
  * Get all clothes or filtered clothes by tags passed in the query string.
  */
-clothesRoutes.get("/get-clothes", async (c) => {
+clothesRoutes.get("/", async (c) => {
     try {
         const tagQuery = c.req.query("tags");
         const allClothes = await db.select().from(clothes);
@@ -36,7 +37,7 @@ clothesRoutes.get("/get-clothes", async (c) => {
  * Add a new cloth to the database.
  * Requires name, description, price, tags and imageUrl.
  */
-clothesRoutes.post("/add-clothes", async (c) => {
+clothesRoutes.post("/", protectRoute, async (c) => {
     try {
         const { name, description, price, tags, imageUrl } = await c.req.json();
 
@@ -66,7 +67,7 @@ clothesRoutes.post("/add-clothes", async (c) => {
 /**
  * Delete a cloth by id.
  */
-clothesRoutes.delete("/delete-clothes/:id", async (c) => {
+clothesRoutes.delete("/:id", protectRoute, async (c) => {
     const id = c.req.param("id");
 
     try {
@@ -85,7 +86,7 @@ clothesRoutes.delete("/delete-clothes/:id", async (c) => {
 /**
  * Update a cloth by id.
  */
-clothesRoutes.patch("/update-clothes/:id", async (c) => {
+clothesRoutes.patch("/:id", protectRoute, async (c) => {
     const id = c.req.param("id");
 
     try {
