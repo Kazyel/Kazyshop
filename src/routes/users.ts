@@ -9,8 +9,8 @@ import { eq } from "drizzle-orm";
 const userRoutes = new Hono<{ Variables: Variables }>();
 
 /**
- * Get all users.
- * @limit - Number of users to return. Default is 25. Max is 25.
+ * Get all users up to a maximum of the provided limit or 25 if no limit is provided.
+ * @param limit - Number of users to return. Default is 25. Max is 25.
  */
 userRoutes.get(
     "/all/:limit",

@@ -6,7 +6,6 @@ import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 
 import { Variables } from "./utils/types";
-import { protectRoute } from "./middlewares/auth";
 import userRoutes from "./routes/users";
 import clothesRoutes from "./routes/clothes";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -24,7 +23,7 @@ const app = new Hono<{ Variables: Variables }>({ strict: false });
 app.use(logger());
 app.use(
     csrf({
-        origin: "http://localhost:8080",
+        origin: "http://localhost:5173",
     })
 );
 app.use("/*", cors());

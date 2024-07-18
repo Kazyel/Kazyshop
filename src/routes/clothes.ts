@@ -7,9 +7,10 @@ import { protectRoute } from "../middlewares/auth";
 const clothesRoutes = new Hono();
 
 /**
- * Get all clothes or filtered clothes by tags passed in the query string.
+ * Get all clothes or clothes filtered by tags.
+ * @param tags - Comma separated list of tags to filter by.
  */
-clothesRoutes.get("/", async (c) => {
+clothesRoutes.get("/all", async (c) => {
     try {
         const tagQuery = c.req.query("tags");
         const allClothes = await db.select().from(clothes);
@@ -28,6 +29,27 @@ clothesRoutes.get("/", async (c) => {
         }
 
         return c.json({ clothes: allClothes });
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+});
+
+/**
+ * Get a single cloth by id.
+ */
+clothesRoutes.get("/:id", async (c) => {
+    const id = c.req.param("id");
+
+    try {
+        const cloth = await db.query.clothes.findFirst({
+            where: eq(clothes.id, id),
+        });
+
+        if (!cloth) {
+            return c.json({ message: "Cloth not found." }, 400);
+        }
+
+        return c.json({ cloth });
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
