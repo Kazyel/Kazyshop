@@ -1,4 +1,12 @@
-import { text, timestamp, pgTable, uuid, json } from "drizzle-orm/pg-core";
+import { int } from "drizzle-orm/mysql-core";
+import {
+    text,
+    timestamp,
+    pgTable,
+    uuid,
+    json,
+    integer,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -6,8 +14,8 @@ export const user = pgTable("user", {
     email: text("email").unique(),
     password: text("password"),
     role: text("role").default("user"),
-    createdAt: timestamp("created_at"),
-    updatedAt: timestamp("updated_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const clothes = pgTable("clothes", {
@@ -19,4 +27,7 @@ export const clothes = pgTable("clothes", {
         tags: string[];
         imageUrl: string;
     }>(),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+    trending_score: integer("trending_score").default(0),
 });

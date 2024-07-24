@@ -36,7 +36,6 @@ userRoutes.get(
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        createdAt: user.createdAt,
                     })
                     .from(user)
                     .limit(limit);
@@ -123,6 +122,7 @@ userRoutes.patch("/", protectRoute, async (c) => {
                 name,
                 email,
                 password: hashedPassword,
+                updatedAt: new Date(),
             })
             .where(eq(user.id, id));
 

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { clothes } from "../db/schema";
 import { db } from "../db/db";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { protectRoute } from "../middlewares/auth";
 
 const clothesRoutes = new Hono();
@@ -10,10 +10,11 @@ const clothesRoutes = new Hono();
  * Get all clothes or clothes filtered by tags.
  * @param tags - Comma separated list of tags to filter by.
  */
-clothesRoutes.get("/all", async (c) => {
+clothesRoutes.get("/all/:limit?", async (c) => {
     try {
         const tagQuery = c.req.query("tags");
-        const allClothes = await db.select().from(clothes);
+        const limit = c.req.param("limit");
+        const allClothes = await db.select().from(clothes).limit(Number(limit));
 
         if (tagQuery) {
             const tags = tagQuery.split(",");
@@ -28,7 +29,38 @@ clothesRoutes.get("/all", async (c) => {
             return c.json({ clothes: filteredClothes });
         }
 
-        return c.json({ clothes: allClothes });
+        return c.json(allClothes);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+});
+
+clothesRoutes.get("/news/:limit?", async (c) => {
+    try {
+        const limit = c.req.param("limit");
+        const newClothes = await db
+            .select()
+            .from(clothes)
+            .orderBy(desc(clothes.createdAt))
+            .limit(Number(limit));
+
+        return c.json(newClothes);
+    } catch (error: any) {
+        return c.json({ message: `Error: ${error.message}` }, 400);
+    }
+});
+
+clothesRoutes.get("/trending/:limit?", async (c) => {
+    try {
+        const limit = c.req.param("limit");
+
+        const trendingClothes = await db
+            .select()
+            .from(clothes)
+            .orderBy(desc(clothes.trending_score))
+            .limit(Number(limit));
+
+        return c.json(trendingClothes);
     } catch (error: any) {
         return c.json({ message: `Error: ${error.message}` }, 400);
     }
