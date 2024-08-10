@@ -35,9 +35,13 @@ clothesRoutes.get("/all/:limit?", async (c) => {
     }
 });
 
+/**
+ * Get all clothes sorted by creation date.
+ * @param limit - Number of clothes to return.
+ */
 clothesRoutes.get("/news/:limit?", async (c) => {
     try {
-        const limit = c.req.param("limit");
+        const limit = Number(c.req.param("limit"));
         const newClothes = await db
             .select()
             .from(clothes)
@@ -50,15 +54,19 @@ clothesRoutes.get("/news/:limit?", async (c) => {
     }
 });
 
+/**
+ * Get all clothes sorted by trending score.
+ * @param limit  - Number of clothes to return.
+ */
 clothesRoutes.get("/trending/:limit?", async (c) => {
     try {
-        const limit = c.req.param("limit");
+        const limit = Number(c.req.param("limit"));
 
         const trendingClothes = await db
             .select()
             .from(clothes)
             .orderBy(desc(clothes.trending_score))
-            .limit(Number(limit));
+            .limit(limit);
 
         return c.json(trendingClothes);
     } catch (error: any) {
